@@ -1,0 +1,23 @@
+# Development environment Docker Compose configuration
+# Uses COMPOSE_PROJECT_NAME from .tooling.env for unique project identification
+
+services:
+  dev:
+    build:
+      context: ..
+      dockerfile: .devcontainer/devc.Dockerfile
+    # Use COMPOSE_PROJECT_NAME instead of container_name for better isolation
+    # This ensures unique names for containers, networks, and volumes
+    working_dir: /workspace
+    volumes:
+      - ..:/workspace:cached
+    environment:
+      # Generic environment variables
+      - TERM=xterm-256color
+    env_file:
+      # Load project-specific configuration
+      - ../.tooling.env
+    tty: true
+    stdin_open: true
+    # Keep container running
+    command: sleep infinity

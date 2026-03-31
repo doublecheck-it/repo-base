@@ -1,0 +1,56 @@
+# .dockerignore for development container builds
+# Excludes files not needed in the container context
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Local configuration (not needed in image)
+.tooling.env
+.env
+.env*
+!.env_template
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation (usually not needed in dev image)
+*.md
+!README.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Build artifacts and caches (if any)
+build/
+dist/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+node_modules/
+target/
+
+# Test coverage and reports
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log
