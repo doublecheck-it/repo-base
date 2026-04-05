@@ -7,7 +7,6 @@ SHELL := /bin/bash
 # Core makefiles (commons must be first for shared variables)
 include make/commons.mk
 include make/setup.mk
-include make/devc.mk
 include make/qa.mk
 include make/sec.mk
 include make/hooks.mk
