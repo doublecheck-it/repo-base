@@ -67,8 +67,10 @@ tooling.add: ## Add a tooling: make tooling.add NAME=python [PREFIX=10] [REF=mai
 		echo "  make tooling.add NAME=python PREFIX=15  # Uses prefix 15-"; \
 		echo "  make tooling.add NAME=python REF=v1.2.3 # Import tag v1.2.3"; \
 		echo "  make tooling.add NAME=kind PREFIX=20 REF=develop # Import develop branch"; \
+		echo "  make tooling.add NAME=devcontainer     # Always uses prefix 00- (enforced)"; \
 		echo ""; \
 		echo "Available toolings:"; \
+		echo "  - devcontainer (Dev container setup - MUST use prefix 00)"; \
 		echo "  - python (Python development stack)"; \
 		echo "  - kind (Kubernetes in Docker)"; \
 		echo "  - terraform (Infrastructure as Code)"; \
@@ -78,9 +80,14 @@ tooling.add: ## Add a tooling: make tooling.add NAME=python [PREFIX=10] [REF=mai
 		echo "      Source metadata is stored in .tooling-source.env"; \
 		exit 1; \
 	fi; \
-	if [ -z "$(NAME)" = "devcontainer" ]; then \
-		prefix=00
-		echo "devcontainer-tooling will have always prefix 00. Using 00 as prefix."; \
+	if [ "$(NAME)" = "devcontainer" ]; then \
+		if [ -n "$(PREFIX)" ] && [ "$(PREFIX)" != "00" ]; then \
+			echo "ERROR: devcontainer-tooling must use prefix 00 (it's the absolute basis)"; \
+			echo "       You specified PREFIX=$(PREFIX), but only 00 is allowed."; \
+			exit 1; \
+		fi; \
+		prefix=00; \
+		echo "devcontainer-tooling is the absolute basis - using prefix 00"; \
 	elif [ -z "$(PREFIX)" ]; then \
 		existing_prefixes=$$(find $(_TOOLING_DIR) -mindepth 1 -maxdepth 1 -type d -name '[0-9]*-*' -printf '%f\n' 2>/dev/null | sed 's/-.*//' | sort -n | tail -1); \
 		if [ -z "$$existing_prefixes" ]; then \
