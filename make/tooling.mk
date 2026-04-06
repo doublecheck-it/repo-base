@@ -52,32 +52,12 @@ tooling.list: ## List all active tooling modules in load order
 tooling.info: tooling.list ## Alias for tooling.list
 
 tooling.list-available: ## List all available toolings that can be added
-	@echo "Available Toolings"
-	@echo "=================="
-	@echo ""
-	@echo "Use: make tooling.add NAME=<name> to add a tooling"
-	@echo ""
-	@echo "Core Toolings:"
-	@echo "  devcontainer  - Dev container setup (prefix 00 - enforced)"
-	@echo ""
-	@echo "Language & Runtime:"
-	@echo "  python        - Python development stack (✅ available)"
-	@echo "  node          - Node.js development (🚧 planned)"
-	@echo "  go            - Go development (🚧 planned)"
-	@echo "  rust          - Rust development (🚧 planned)"
-	@echo ""
-	@echo "Infrastructure:"
-	@echo "  kind          - Kubernetes in Docker (🚧 planned)"
-	@echo "  terraform     - Infrastructure as Code (🚧 planned)"
-	@echo "  aws           - AWS CLI and tools (🚧 planned)"
-	@echo ""
-	@echo "Databases:"
-	@echo "  postgres      - PostgreSQL database (🚧 planned)"
-	@echo "  mysql         - MySQL database (🚧 planned)"
-	@echo "  redis         - Redis cache (🚧 planned)"
-	@echo ""
-	@echo "For detailed information, see: tooling/AVAILABLE-TOOLINGS.md"
-	@echo ""
+	@if [ -f "$(_TOOLING_DIR)/AVAILABLE-TOOLINGS.md" ]; then \
+		cat "$(_TOOLING_DIR)/AVAILABLE-TOOLINGS.md"; \
+	else \
+		echo "Error: $(_TOOLING_DIR)/AVAILABLE-TOOLINGS.md not found"; \
+		exit 1; \
+	fi
 
 _TOOLING_REPO_BASE := https://github.com/doublecheck-it
 
