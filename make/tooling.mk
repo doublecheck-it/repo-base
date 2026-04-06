@@ -80,7 +80,7 @@ tooling.add: ## Add a tooling: make tooling.add NAME=python [PREFIX=10] [REF=mai
 	fi; \
 	if [ -z "$(NAME)" = "devcontainer" ]; then \
 		prefix=00
-		echo "devcontainer-tooling will have always prefix 00. Using 00 as prefix."
+		echo "devcontainer-tooling will have always prefix 00. Using 00 as prefix."; \
 	elif [ -z "$(PREFIX)" ]; then \
 		existing_prefixes=$$(find $(_TOOLING_DIR) -mindepth 1 -maxdepth 1 -type d -name '[0-9]*-*' -printf '%f\n' 2>/dev/null | sed 's/-.*//' | sort -n | tail -1); \
 		if [ -z "$$existing_prefixes" ]; then \
