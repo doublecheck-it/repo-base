@@ -3,8 +3,8 @@
 REPO_ROOT := $(shell pwd)
 REPO_DIRNAME := $(shell basename $(REPO_ROOT))
 
-_DEVC_COMPOSE_FILE := tooling/devcontainer-tooling/devcontainer/devc.docker-compose.yaml
-_DEVC_DOCKERFILE := tooling/devcontainer-tooling/devcontainer/devc.Dockerfile
+_DEVC_COMPOSE_FILE := tooling/00-devcontainer/devcontainer/devc.docker-compose.yaml
+_DEVC_DOCKERFILE := tooling/00-devcontainer/devcontainer/devc.Dockerfile
 DEVC_SERVICE := dev
 
 _TOOLING_ENV_FILE := .tooling.env
