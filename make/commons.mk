@@ -3,9 +3,15 @@
 REPO_ROOT := $(shell pwd)
 REPO_DIRNAME := $(shell basename $(REPO_ROOT))
 
-_DEVC_COMPOSE_FILE := tooling/00-devcontainer/devcontainer/devc.docker-compose.yaml
-_DEVC_DOCKERFILE := tooling/00-devcontainer/devcontainer/devc.Dockerfile
+# Discover devcontainer tooling directory dynamically
+# Look for any tooling that has the devcontainer files
+_DEVC_TOOLING_DIR := $(shell find tooling -maxdepth 2 -type d -name devcontainer 2>/dev/null | grep -E 'tooling/[^/]+/devcontainer$$' | head -1 | xargs dirname 2>/dev/null)
+_DEVC_COMPOSE_FILE := $(_DEVC_TOOLING_DIR)/devcontainer/devc.docker-compose.yaml
+_DEVC_DOCKERFILE := $(_DEVC_TOOLING_DIR)/devcontainer/devc.Dockerfile
 DEVC_SERVICE := dev
+
+# Export dockerfile path for docker compose to use
+export DEVC_DOCKERFILE_PATH := $(_DEVC_DOCKERFILE)
 
 _TOOLING_ENV_FILE := .tooling.env
 _TOOLING_ENV_TEMPLATE := .tooling.env.template
