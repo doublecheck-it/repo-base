@@ -5,7 +5,8 @@ REPO_DIRNAME := $(shell basename $(REPO_ROOT))
 
 # Discover devcontainer tooling directory dynamically
 # Look for any tooling that has the devcontainer files
-_DEVC_TOOLING_DIR := $(shell find tooling -maxdepth 2 -type d -name devcontainer 2>/dev/null | grep -E 'tooling/[^/]+/devcontainer$$' | head -1 | xargs dirname 2>/dev/null)
+# Sort to ensure 00-devcontainer is found first (it's the basis)
+_DEVC_TOOLING_DIR := $(shell find tooling -maxdepth 2 -type d -name devcontainer 2>/dev/null | grep -E 'tooling/[^/]+/devcontainer$$' | sort | head -1 | xargs dirname 2>/dev/null)
 _DEVC_COMPOSE_FILE := $(_DEVC_TOOLING_DIR)/devcontainer/devc.docker-compose.yaml
 _DEVC_DOCKERFILE := $(_DEVC_TOOLING_DIR)/devcontainer/devc.Dockerfile
 DEVC_SERVICE := dev
