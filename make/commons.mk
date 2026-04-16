@@ -47,5 +47,5 @@ endef
 _ensure-tooling-env:
 	@if [ ! -f $(_TOOLING_ENV_FILE) ]; then \
 		echo "$(_TOOLING_ENV_FILE) not found. Running setup..."; \
-		$(MAKE) -s setup.project; \
+		$(MAKE) -s setup.env; \
 	fi
