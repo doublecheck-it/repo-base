@@ -52,7 +52,7 @@ make tooling.add
 Add a tooling by name:
 
 ```bash
-make tooling.add NAME=python
+make tooling.add
 ```
 
 Remove a tooling:
