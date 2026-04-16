@@ -156,13 +156,7 @@ fi
 # 4. Handle Makefile intelligently
 setup_makefile "$TEMP_DIR/Makefile"
 
-# 5. Install config files (always)
-if [ -f "$TEMP_DIR/.tooling.env.template" ]; then
-  cp "$TEMP_DIR/.tooling.env.template" .tooling.env.template
-  echo -e "${GREEN}✓ .tooling.env.template installed${NC}"
-fi
-
-# 6. Merge .gitignore
+# 5. Merge .gitignore
 merge_gitignore "$TEMP_DIR/.gitignore" ".gitignore"
 
 # 7. Merge .dockerignore

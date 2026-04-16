@@ -15,7 +15,6 @@ DEVC_SERVICE := dev
 export DEVC_DOCKERFILE_PATH := $(_DEVC_DOCKERFILE)
 
 _TOOLING_ENV_FILE := .tooling.env
-_TOOLING_ENV_TEMPLATE := .tooling.env.template
 _TOOLING_DIR := tooling
 
 # Tooling discovery

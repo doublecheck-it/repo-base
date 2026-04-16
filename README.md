@@ -25,7 +25,7 @@ make setup
   - If exists: adds `-include make/*.mk` and `help` task (if not present)
   - If missing: downloads the full Makefile
 - Merges `.gitignore` and `.dockerignore` entries (non-destructive)
-- Installs `.tooling.env.template` configuration
+- Generates `.tooling.env` via `make setup`
 
 ## Managing Toolings
 
