@@ -7,7 +7,6 @@ set -euo pipefail
 REPO_BASE_URL="${REPO_BASE_URL:-https://github.com/doublecheck-it/repo-base.git}"
 REPO_BASE_REF="${REPO_BASE_REF:-main}"
 TEMP_DIR=$(mktemp -d)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Colors for output
 RED='\033[0;31m'
@@ -31,33 +30,6 @@ echo ""
 # Clone repo-base to temp directory
 echo -e "${BLUE}→ Fetching repo-base from ${REPO_BASE_URL}...${NC}"
 git clone --depth 1 --branch "$REPO_BASE_REF" "$REPO_BASE_URL" "$TEMP_DIR" 2>&1 | grep -v "Cloning into" || true
-
-# Function to check if file exists and ask user
-check_and_copy() {
-    local src="$1"
-    local dest="$2"
-    local description="$3"
-    
-    if [ -e "$dest" ]; then
-        echo -e "${YELLOW}⚠ ${description} already exists: ${dest}${NC}"
-        read -p "  Overwrite? [y/N] " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            echo -e "  ${BLUE}Skipped${NC}"
-            return 0
-        fi
-    fi
-    
-    # Create parent directory if needed
-    mkdir -p "$(dirname "$dest")"
-    
-    if [ -d "$src" ]; then
-        cp -r "$src" "$dest"
-    else
-        cp "$src" "$dest"
-    fi
-    echo -e "${GREEN}✓ ${description} installed${NC}"
-}
 
 # Function to merge gitignore
 merge_gitignore() {
@@ -110,21 +82,42 @@ setup_makefile() {
     local dest="Makefile"
     
     if [ -f "$dest" ]; then
-        echo -e "${YELLOW}⚠ Makefile already exists${NC}"
-        echo "  You'll need to manually add these includes to your Makefile:"
-        echo -e "  ${BLUE}include make/commons.mk${NC}"
-        echo -e "  ${BLUE}include make/tooling.mk${NC}"
-        echo -e "  ${BLUE}include make/setup.mk${NC}"
-        echo -e "  ${BLUE}-include tooling/*/make.mk${NC}"
-        echo ""
-        read -p "  Open example Makefile to see full structure? [y/N] " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            echo ""
-            echo -e "${BLUE}────────────────────────────────────────────────────────────${NC}"
-            cat "$src"
-            echo -e "${BLUE}────────────────────────────────────────────────────────────${NC}"
-            echo ""
+        echo -e "${BLUE}→ Updating existing Makefile...${NC}"
+        
+        # Check and add wildcard include for make directory
+        if ! grep -q "include make/.*\.mk" "$dest" && ! grep -q "include.*make/" "$dest"; then
+            echo "" >> "$dest"
+            echo "# repo-base tooling framework" >> "$dest"
+            echo "-include make/*.mk" >> "$dest"
+            echo -e "${GREEN}✓ Added make/*.mk include to Makefile${NC}"
+        else
+            echo -e "${BLUE}  make/ includes already present in Makefile${NC}"
+        fi
+        
+        # Check and add help task if not present
+        if ! grep -q "^help:" "$dest" && ! grep -q "^help " "$dest"; then
+            echo "" >> "$dest"
+            cat >> "$dest" << 'EOF'
+.PHONY: help
+help: ## Show this help message
+	@echo "Available tasks:"
+	@echo ""
+	@for file in $(MAKEFILE_LIST); do \
+		if [ -f "$$file" ]; then \
+			targets=$$(grep -E '^[a-zA-Z_.-]+:.*##' "$$file" 2>/dev/null); \
+			if [ -n "$$targets" ]; then \
+				name=$$(basename "$$file" .mk); \
+				if [ "$$name" = "Makefile" ]; then name="main"; fi; \
+				echo "-- $$name"; \
+				echo "$$targets" | awk -F':.*##' '{printf "   \033[36m%-28s\033[0m %s\n", $$1, $$2}'; \
+				echo ""; \
+			fi; \
+		fi; \
+	done
+EOF
+            echo -e "${GREEN}✓ Added help task to Makefile${NC}"
+        else
+            echo -e "${BLUE}  help task already present in Makefile${NC}"
         fi
     else
         cp "$src" "$dest"
@@ -135,53 +128,44 @@ setup_makefile() {
 echo -e "${BLUE}Installing core files...${NC}"
 echo ""
 
-# Install make directory (always needed)
-if [ -d "make" ]; then
-    echo -e "${YELLOW}⚠ make/ directory already exists${NC}"
-    read -p "  Update make files? [y/N] " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        cp -r "$TEMP_DIR/make/"*.mk make/
-        echo -e "${GREEN}✓ make/ directory updated${NC}"
-    else
-        echo -e "${BLUE}  Skipped${NC}"
-    fi
-else
-    mkdir -p make
-    cp -r "$TEMP_DIR/make/"*.mk make/
-    echo -e "${GREEN}✓ make/ directory installed${NC}"
-fi
+# 1. Always download make/ directory (core functionality)
+echo -e "${BLUE}→ Installing make/ directory...${NC}"
+mkdir -p make
+cp -r "$TEMP_DIR/make/"* make/
+echo -e "${GREEN}✓ make/ directory installed${NC}"
 
-# Install tooling directory (if not exists, create with README)
-if [ ! -d "tooling" ]; then
-    mkdir -p tooling
-    if [ -d "$TEMP_DIR/tooling" ]; then
-        # Copy README and available toolings list if they exist
-        [ -f "$TEMP_DIR/tooling/README.md" ] && cp "$TEMP_DIR/tooling/README.md" tooling/
-        [ -f "$TEMP_DIR/tooling/AVAILABLE-TOOLINGS.md" ] && cp "$TEMP_DIR/tooling/AVAILABLE-TOOLINGS.md" tooling/
-    fi
-    echo -e "${GREEN}✓ tooling/ directory created${NC}"
+# 2. Always download tooling/ directory
+echo -e "${BLUE}→ Installing tooling/ directory...${NC}"
+mkdir -p tooling
+if [ -d "$TEMP_DIR/tooling" ]; then
+    # Copy all tooling directory contents
+    cp -r "$TEMP_DIR/tooling/"* tooling/ 2>/dev/null || true
+fi
+echo -e "${GREEN}✓ tooling/ directory installed${NC}"
+
+# 3. Handle README.md - skip if exists
+if [ -f "README.md" ]; then
+    echo -e "${BLUE}  README.md already exists - skipping${NC}"
 else
-    echo -e "${BLUE}  tooling/ directory already exists${NC}"
-    # Update documentation if available
-    if [ -f "$TEMP_DIR/tooling/README.md" ]; then
-        check_and_copy "$TEMP_DIR/tooling/README.md" "tooling/README.md" "tooling documentation"
-    fi
-    if [ -f "$TEMP_DIR/tooling/AVAILABLE-TOOLINGS.md" ]; then
-        check_and_copy "$TEMP_DIR/tooling/AVAILABLE-TOOLINGS.md" "tooling/AVAILABLE-TOOLINGS.md" "available toolings list"
+    if [ -f "$TEMP_DIR/README.md" ]; then
+        cp "$TEMP_DIR/README.md" README.md
+        echo -e "${GREEN}✓ README.md installed${NC}"
     fi
 fi
 
-# Install Makefile
+# 4. Handle Makefile intelligently
 setup_makefile "$TEMP_DIR/Makefile"
 
-# Install config files
-check_and_copy "$TEMP_DIR/.tooling.env.template" ".tooling.env.template" "tooling environment template"
+# 5. Install config files (always)
+if [ -f "$TEMP_DIR/.tooling.env.template" ]; then
+    cp "$TEMP_DIR/.tooling.env.template" .tooling.env.template
+    echo -e "${GREEN}✓ .tooling.env.template installed${NC}"
+fi
 
-# Merge .gitignore
+# 6. Merge .gitignore
 merge_gitignore "$TEMP_DIR/.gitignore" ".gitignore"
 
-# Merge .dockerignore
+# 7. Merge .dockerignore
 merge_dockerignore "$TEMP_DIR/.dockerignore" ".dockerignore"
 
 # Clean up
@@ -206,7 +190,4 @@ echo ""
 echo -e "${BLUE}Available commands:${NC}"
 echo -e "  ${GREEN}make help${NC}                    - Show all available commands"
 echo -e "  ${GREEN}make tooling.list-available${NC}  - Show available toolings"
-echo ""
-echo -e "${YELLOW}Note: If you had an existing Makefile, you'll need to manually"
-echo "add the required includes (see output above).${NC}"
 echo ""

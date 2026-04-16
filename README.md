@@ -4,34 +4,30 @@ Generic, extensible project foundation with pluggable tooling architecture.
 
 ## Adding to Existing Repository
 
-Want to add repo-base tooling to your existing project? Use the install scripts to add specific toolings without affecting your git configuration or existing files.
-
-### Python Tooling
-
-Install Python development tools (ruff, pytest, mypy, ipython):
+Want to add repo-base to your existing project? Use the install script:
 
 ```bash
-# Quick install (default Python 3.12)
-curl -fsSL https://raw.githubusercontent.com/doublecheck-it/repo-base/main/python-tooling/devcontainer/install.sh | bash
-
-# Custom Python version
-PYTHON_VERSION=3.11 curl -fsSL https://raw.githubusercontent.com/.../install.sh | bash
-
-# Or download and run
-wget https://raw.githubusercontent.com/doublecheck-it/repo-base/main/python-tooling/devcontainer/install.sh
-chmod +x install.sh
-./install.sh
+# Quick install
+curl -fsSL https://raw.githubusercontent.com/doublecheck-it/repo-base/main/install.sh | bash
 ```
 
-**What it installs:**
-- Python (default: 3.12) and development tools
-- Essential packages: ruff, pytest, pytest-cov, pytest-asyncio, mypy, ipython, ipdb
-- Does NOT install frameworks (fastapi, django, flask) - add those separately
-- Does NOT modify your existing repository files or git configuration
+**What it does:**
+- Downloads `make/` directory (all Make task definitions)
+- Downloads `tooling/` directory (tooling framework)
+- Skips `README.md` if your repository already has one
+- For `Makefile`:
+  - If exists: adds `-include make/*.mk` and `help` task (if not present)
+  - If missing: downloads the full Makefile
+- Merges `.gitignore` and `.dockerignore` entries (non-destructive)
+- Installs `.tooling.env.template` configuration
 
-**Requirements:**
-- Debian/Ubuntu-based container with apt-get
-- Root privileges (or run with sudo)
+**After installation, add toolings via Make tasks:**
+```bash
+make setup                   # Initialize project
+make tooling.list-available  # See available toolings
+make tooling.add NAME=python # Add Python tooling
+make tooling.add NAME=devcontainer # Add devcontainer
+```
 
 ---
 
