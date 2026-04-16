@@ -31,8 +31,6 @@ make setup
 
 repo-base provides pluggable toolings that extend your project with specific capabilities (Python, Node.js, devcontainer, etc.).
 
-**Available toolings:** See [`tooling/AVAILABLE-TOOLINGS.md`](tooling/AVAILABLE-TOOLINGS.md)
-
 List all available toolings:
 
 ```bash
@@ -45,14 +43,16 @@ Show currently active toolings:
 make tooling.list
 ```
 
-Add a tooling to your project:
+Add a tooling (interactive menu):
+
+```bash
+make tooling.add
+```
+
+Add a tooling by name:
 
 ```bash
 make tooling.add NAME=python
-```
-
-```bash
-make tooling.add NAME=devcontainer
 ```
 
 Remove a tooling:

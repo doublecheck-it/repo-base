@@ -1,0 +1,15 @@
+# Available Toolings
+# Format: name|repository|description|prefix|enforced|status|category
+# Lines starting with # are comments
+
+devcontainer|https://github.com/doublecheck-it/devcontainer-tooling|Development container setup with Docker Compose orchestration|00|true|available|core
+python|https://github.com/doublecheck-it/python-tooling|Python development stack with uv, pytest, ruff, and mypy|10|false|available|language
+node|https://github.com/doublecheck-it/node-tooling|Node.js development stack with npm/yarn/pnpm support|10|false|planned|language
+go|https://github.com/doublecheck-it/go-tooling|Go development environment with go modules and common tools|10|false|planned|language
+rust|https://github.com/doublecheck-it/rust-tooling|Rust development environment with cargo and clippy|10|false|planned|language
+kind|https://github.com/doublecheck-it/kind-tooling|Kubernetes in Docker for local Kubernetes development|20|false|planned|infrastructure
+terraform|https://github.com/doublecheck-it/terraform-tooling|Infrastructure as Code with Terraform and common providers|30|false|planned|infrastructure
+aws|https://github.com/doublecheck-it/aws-tooling|AWS CLI and tools for AWS development|30|false|planned|infrastructure
+postgres|https://github.com/doublecheck-it/postgres-tooling|PostgreSQL database with local Docker instance and psql client|40|false|planned|database
+mysql|https://github.com/doublecheck-it/mysql-tooling|MySQL database with local Docker instance and mysql client|40|false|planned|database
+redis|https://github.com/doublecheck-it/redis-tooling|Redis cache/database with local Docker instance and redis-cli|40|false|planned|database

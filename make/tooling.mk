@@ -3,6 +3,10 @@
 
 .PHONY: tooling.list tooling.info tooling.list-available tooling.add tooling.remove
 
+_TOOLING_REPO_BASE := https://github.com/doublecheck-it
+_TOOLING_LIST_URL := https://raw.githubusercontent.com/doublecheck-it/repo-base/main/tooling/available-toolings.txt
+_TOOLING_LIST_CACHE := /tmp/available-toolings.txt
+
 tooling.list: ## List all active tooling modules in load order
 	@echo "Active Tooling Modules (load order)"
 	@echo ""
@@ -51,44 +55,85 @@ tooling.list: ## List all active tooling modules in load order
 
 tooling.info: tooling.list ## Alias for tooling.list
 
-tooling.list-available: ## List all available toolings that can be added
-	@if [ -f "$(_TOOLING_DIR)/AVAILABLE-TOOLINGS.md" ]; then \
-		cat "$(_TOOLING_DIR)/AVAILABLE-TOOLINGS.md"; \
+_fetch_toolings_list:
+	@curl -fsSL "$(_TOOLING_LIST_URL)" -o "$(_TOOLING_LIST_CACHE)" 2>/dev/null || { \
+		if [ -f "$(_TOOLING_DIR)/available-toolings.txt" ]; then \
+			cp "$(_TOOLING_DIR)/available-toolings.txt" "$(_TOOLING_LIST_CACHE)"; \
+		else \
+			echo "Error: No toolings list available"; \
+			exit 1; \
+		fi; \
+	}
+
+tooling.list-available: _fetch_toolings_list ## List all available toolings that can be added
+	@echo "Available Toolings"
+	@echo "=================="
+	@echo ""
+	@installed="|"; \
+	if [ -d "$(_TOOLING_DIR)" ]; then \
+		for dir in $(_TOOLING_DIR)/[0-9]*-*; do \
+			[ -d "$$dir" ] || continue; \
+			name=$$(basename "$$dir" | sed 's/^[0-9]*-//'); \
+			installed="$$installed$$name|"; \
+		done; \
+	fi; \
+	prev_cat=""; \
+	grep -v '^#' "$(_TOOLING_LIST_CACHE)" | grep -v '^$$' | while IFS='|' read -r name repo desc prefix enforced status cat; do \
+		if [ "$$cat" != "$$prev_cat" ]; then \
+			[ -n "$$prev_cat" ] && echo ""; \
+			echo "$$(echo $$cat | awk '{print toupper(substr($$0,1,1)) substr($$0,2)}') Toolings:"; \
+			prev_cat="$$cat"; \
+		fi; \
+		badge="○"; \
+		[ "$$status" = "available" ] && badge="✓"; \
+		inst=""; \
+		echo "$$installed" | grep -q "|$$name|" && inst=" [INSTALLED]"; \
+		printf "  %s %-15s - %s%s\n" "$$badge" "$$name" "$$desc" "$$inst"; \
+	done
+
+tooling.add: ## Add a tooling: make tooling.add [NAME=python] [PREFIX=10] [REF=main]
+	@if [ -z "$(NAME)" ]; then \
+		$(MAKE) -s _tooling_add_interactive; \
 	else \
-		echo "Error: $(_TOOLING_DIR)/AVAILABLE-TOOLINGS.md not found"; \
-		exit 1; \
+		$(MAKE) -s _tooling_add_by_name NAME="$(NAME)" PREFIX="$(PREFIX)" REF="$(REF)"; \
 	fi
 
-_TOOLING_REPO_BASE := https://github.com/doublecheck-it
-
-tooling.add: ## Add a tooling: make tooling.add NAME=python [PREFIX=10] [REF=main]
-	@if [ -z "$(NAME)" ]; then \
-		echo "Usage: make tooling.add NAME=<tooling-name> [PREFIX=<number>] [REF=<branch>]"; \
-		echo ""; \
-		echo "Parameters:"; \
-		echo "  NAME    - Tooling name (required)"; \
-		echo "  PREFIX  - Numeric prefix for ordering (optional, auto-assigned if not set)"; \
-		echo "  REF     - Git branch/tag to import (optional, default: main)"; \
-		echo ""; \
-		echo "Examples:"; \
-		echo "  make tooling.add NAME=python          # Auto-assigns prefix (10-)"; \
-		echo "  make tooling.add NAME=python PREFIX=15  # Uses prefix 15-"; \
-		echo "  make tooling.add NAME=python REF=v1.2.3 # Import tag v1.2.3"; \
-		echo "  make tooling.add NAME=kind PREFIX=20 REF=develop # Import develop branch"; \
-		echo "  make tooling.add NAME=devcontainer     # Always uses prefix 00- (enforced)"; \
-		echo ""; \
-		echo "Available toolings:"; \
-		echo "  - devcontainer (Dev container setup - MUST use prefix 00)"; \
-		echo "  - python (Python development stack)"; \
-		echo "  - kind (Kubernetes in Docker)"; \
-		echo "  - terraform (Infrastructure as Code)"; \
-		echo "  - node (Node.js development stack)"; \
-		echo ""; \
-		echo "Note: The tooling's .git directory is removed after import."; \
-		echo "      Source metadata is stored in .tooling-source.env"; \
-		exit 1; \
+_tooling_add_interactive: _fetch_toolings_list
+	@installed="|"; \
+	if [ -d "$(_TOOLING_DIR)" ]; then \
+		for dir in $(_TOOLING_DIR)/[0-9]*-*; do \
+			[ -d "$$dir" ] || continue; \
+			name=$$(basename "$$dir" | sed 's/^[0-9]*-//'); \
+			installed="$$installed$$name|"; \
+		done; \
 	fi; \
-	if [ "$(NAME)" = "devcontainer" ]; then \
+	installable=$$(grep -v '^#' "$(_TOOLING_LIST_CACHE)" | grep -v '^$$' | while IFS='|' read -r name repo desc prefix enforced status cat; do \
+		echo "$$installed" | grep -q "|$$name|" || [ "$$status" != "available" ] || echo "$$name"; \
+	done); \
+	if [ -z "$$installable" ]; then \
+		echo "No toolings available to install (all already installed or none marked as available)"; \
+		exit 0; \
+	fi; \
+	echo "Select a tooling to add:"; \
+	echo ""; \
+	PS3="Enter number (or 0 to cancel): "; \
+	select tooling in $$installable; do \
+		if [ "$$REPLY" = "0" ]; then \
+			echo "Cancelled"; \
+			exit 0; \
+		fi; \
+		if [ -n "$$tooling" ]; then \
+			echo ""; \
+			$(MAKE) -s _tooling_add_by_name NAME=$$tooling; \
+			break; \
+		else \
+			echo "Invalid selection. Please try again."; \
+		fi; \
+	done
+
+_tooling_add_by_name:
+_tooling_add_by_name:
+	@if [ "$(NAME)" = "devcontainer" ]; then \
 		if [ -n "$(PREFIX)" ] && [ "$(PREFIX)" != "00" ]; then \
 			echo "ERROR: devcontainer-tooling must use prefix 00 (it's the absolute basis)"; \
 			echo "       You specified PREFIX=$(PREFIX), but only 00 is allowed."; \
