@@ -34,7 +34,7 @@ repo-base provides pluggable toolings that extend your project with specific cap
 List all available toolings:
 
 ```bash
-make tooling.list-available
+make tooling.list-installed
 ```
 
 Show currently active toolings:

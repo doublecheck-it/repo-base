@@ -24,4 +24,4 @@ help: ## Show this help message
 		fi; \
 	done
 	@echo "First time setup: make setup"
-	@echo "To add a Tooling: make tooling.list-available and make tooling.add"
+	@echo "To add a Tooling: make tooling.list-installed and make tooling.add"

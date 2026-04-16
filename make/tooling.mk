@@ -1,7 +1,7 @@
 ## Tooling management and discovery
 ## Shows information about active tooling modules
 
-.PHONY: tooling.list tooling.info tooling.list-available tooling.add tooling.remove
+.PHONY: tooling.list tooling.info tooling.list-installed tooling.add tooling.remove
 
 _TOOLING_REPO_BASE := https://github.com/doublecheck-it
 _TOOLING_LIST_URL := https://raw.githubusercontent.com/doublecheck-it/repo-base/main/tooling/available-toolings.txt
@@ -65,7 +65,7 @@ _fetch_toolings_list:
 		fi; \
 	}
 
-tooling.list-available: _fetch_toolings_list ## List all available toolings that can be added
+tooling.list-installed: _fetch_toolings_list ## List all available toolings that can be added
 	@echo "Available Toolings"
 	@echo "=================="
 	@echo ""
