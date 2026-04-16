@@ -78,17 +78,15 @@ tooling.list-available: _fetch_toolings_list ## List all available toolings that
 		done; \
 	fi; \
 	prev_cat=""; \
-	grep -v '^#' "$(_TOOLING_LIST_CACHE)" | grep -v '^$$' | while IFS='|' read -r name repo desc prefix enforced status cat; do \
+	grep -v '^#' "$(_TOOLING_LIST_CACHE)" | grep -v '^$$' | while IFS='|' read -r name repo desc prefix enforced cat; do \
 		if [ "$$cat" != "$$prev_cat" ]; then \
 			[ -n "$$prev_cat" ] && echo ""; \
 			echo "$$(echo $$cat | awk '{print toupper(substr($$0,1,1)) substr($$0,2)}') Toolings:"; \
 			prev_cat="$$cat"; \
 		fi; \
-		badge="○"; \
-		[ "$$status" = "available" ] && badge="✓"; \
-		inst=""; \
-		echo "$$installed" | grep -q "|$$name|" && inst=" [INSTALLED]"; \
-		printf "  %s %-15s - %s%s\n" "$$badge" "$$name" "$$desc" "$$inst"; \
+		badge=" "; \
+		echo "$$installed" | grep -q "|$$name|" && badge="✓"; \
+		printf "  %s %-15s - %s\n" "$$badge" "$$name" "$$desc"; \
 	done
 
 tooling.add: ## Add a tooling: make tooling.add [NAME=python] [PREFIX=10] [REF=main]
@@ -107,11 +105,11 @@ _tooling_add_interactive: _fetch_toolings_list
 			installed="$$installed$$name|"; \
 		done; \
 	fi; \
-	installable=$$(grep -v '^#' "$(_TOOLING_LIST_CACHE)" | grep -v '^$$' | while IFS='|' read -r name repo desc prefix enforced status cat; do \
-		echo "$$installed" | grep -q "|$$name|" || [ "$$status" != "available" ] || echo "$$name"; \
+	installable=$$(grep -v '^#' "$(_TOOLING_LIST_CACHE)" | grep -v '^$$' | while IFS='|' read -r name repo desc prefix enforced cat; do \
+		echo "$$installed" | grep -q "|$$name|" || echo "$$name"; \
 	done); \
 	if [ -z "$$installable" ]; then \
-		echo "No toolings available to install (all already installed or none marked as available)"; \
+		echo "No toolings available to install (all already installed)"; \
 		exit 0; \
 	fi; \
 	echo "Select a tooling to add:"; \
