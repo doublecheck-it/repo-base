@@ -18,7 +18,7 @@ This repo is designed to be forked and extended with your stack-specific tooling
 
 ## Quick Start
 
-### 1. First-Time Setup
+### For New Projects
 
 Clone this repository and run the interactive setup:
 
@@ -33,6 +33,29 @@ This will:
 - Remove the `.git` directory (fresh start)
 - Generate `.tooling.env` with a unique `PROJECT_ID`
 - Optionally rename the directory
+
+### For Existing Projects
+
+Add repo-base to your existing repository with the bootstrap script:
+
+```bash
+# From your project root directory
+curl -fsSL https://raw.githubusercontent.com/doublecheck-it/repo-base/main/install.sh | bash
+```
+
+This will:
+- Install `make/` directory with all makefiles
+- Create `tooling/` directory for tooling modules
+- Add `Makefile` (or show you what to add to your existing one)
+- Install `.tooling.env.template` and merge `.gitignore`/`.dockerignore`
+
+**After installation:**
+```bash
+make setup.project  # Initialize project
+make tooling.add NAME=devcontainer  # Add devcontainer
+make devcontainer.setup  # Set up .devcontainer/devcontainer.json
+make devc.up  # Start development environment
+```
 
 ### 2. Start the Development Environment
 
