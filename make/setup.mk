@@ -62,7 +62,7 @@ setup: ## Interactive project setup
 	echo "Setup complete!"; \
 	echo ""; \
 	echo "Next steps:"; \
-	echo "  1. Add devcontainer tooling: make tooling.add NAME=devcontainer"; \
+	echo "  1. Add devcontainer tooling: make tooling.add"; \
 	echo "  2. Set up devcontainer: make devcontainer.setup"; \
 	echo "  3. Start development: make devc.up"; \
 	echo ""; \
